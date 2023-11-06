@@ -149,6 +149,10 @@ func (mp *MinerPool) PrepareData(b *Block, nonce int64) []byte {
 }
 
 func (mp *MinerPool) Mine(b *Block) (int64, []byte, string) {
+	if len(mp.Addresses) == 0 {
+		log.Fatal(errors.New("there is no miner in the pool, please add miner first"))
+	}
+
 	fmt.Printf("Mining the block containing \"%s\"\n", string(b.Data))
 	
 	var hashInt big.Int

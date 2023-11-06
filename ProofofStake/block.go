@@ -176,20 +176,20 @@ func (bc *Blockchain) ShowBlocksOfMiner(address string) {
 
 	for {
 		b := bci.Next()
+
+		if b.Address == address {
+			fmt.Print("Timestamp:")
+			fmt.Println(time.Unix(b.Timestamp, 0).Format(time.RFC3339))
+			fmt.Printf("PrevHash: %x\n", b.PrevHash)
+			fmt.Printf("Data: %s\n", b.Data)
+			fmt.Printf("Hash: %x\n", b.Hash)
+			fmt.Printf("Height: %d\n", b.Height)
+			fmt.Printf("PoS: %t\n", bc.mp.Validate(b))
+			fmt.Println()
+		}
+		
 		if b.Height == 1 {
 			return
 		}
-		if b.Address == address {
-			continue
-		}
-		fmt.Print("Timestamp:")
-		fmt.Println(time.Unix(b.Timestamp, 0).Format(time.RFC3339))
-		fmt.Printf("PrevHash: %x\n", b.PrevHash)
-		fmt.Printf("Data: %s\n", b.Data)
-		fmt.Printf("Hash: %x\n", b.Hash)
-		fmt.Printf("Height: %d\n", b.Height)
-		fmt.Printf("PoS: %t\n", bc.mp.Validate(b))
-		fmt.Println()
-
 	}
 }

@@ -21,7 +21,6 @@ type Block struct {
 
 type Blockchain struct { 
 	tip 		[]byte
-	db  		*bolt.DB
 	mp			*MinerPool
 }
 
@@ -52,16 +51,11 @@ func NewGenesisBlock(mp *MinerPool) *Block {
 	return NewBlock("Genesis Block", []byte(""), 1, mp)
 }
 
-func NewBlockchain(dbFile string, mp *MinerPool) *Blockchain {
-	if len(dbFile) == 0 {
-		dbFile = defaultDatabase
-	}
+func NewBlockchain(mp *MinerPool) *Blockchain {
+
 	var tip []byte
-	db, err := bolt.Open(dbFile, 0600, nil)
-	if err != nil {
-		log.Panic(err)
-	}
-	err = db.Update(func(tx *bolt.Tx) error {
+	
+	if err := mp.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(blocksBucket))
 		if b == nil {
 			genesis := NewGenesisBlock(mp)
@@ -82,17 +76,15 @@ func NewBlockchain(dbFile string, mp *MinerPool) *Blockchain {
 			tip = b.Get([]byte("l"))
 		}
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		log.Panic(err)
 	}
 
-	bc := Blockchain{tip, db, mp}
-	return &bc
+	return &Blockchain{tip, mp}
 }
 
 func (bc *Blockchain) NewIterator() *BlockchainIterator {
-	bci := &BlockchainIterator{bc.tip, bc.db}
+	bci := &BlockchainIterator{bc.tip, bc.mp.db}
 	return bci
 }
 
@@ -110,7 +102,7 @@ func (bc *Blockchain) AddBlock(data string) {
 	var lastHash []byte
 	var lastBlock *Block
 
-	err := bc.db.View(func(tx *bolt.Tx) error {
+	err := bc.mp.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(blocksBucket))
 		lastHash = b.Get([]byte("l"))
 		lastBlock = DeserializeBlock(b.Get(lastHash))
@@ -120,7 +112,7 @@ func (bc *Blockchain) AddBlock(data string) {
 		log.Fatal(err)
 	}
 	newBlock := NewBlock(data, lastHash, lastBlock.Height+1, bc.mp)
-	err = bc.db.Update(func(tx *bolt.Tx) error {
+	err = bc.mp.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(blocksBucket))
 		err := b.Put(newBlock.Hash, Serialize(newBlock))
 		if err != nil {
@@ -167,11 +159,37 @@ func (bc *Blockchain) BlockChainIteration() {
 		fmt.Printf("Data: %s\n", b.Data)
 		fmt.Printf("Hash: %x\n", b.Hash)
 		fmt.Printf("Height: %d\n", b.Height)
+		fmt.Printf("Miner address: %s\n", b.Address)
 		fmt.Printf("PoS: %t\n", bc.mp.Validate(b))
 		fmt.Println()
 
 		if b.Height == 1 {
 			return
 		}
+	}
+}
+
+func (bc *Blockchain) ShowBlocksOfMiner(address string) {
+	bci := bc.NewIterator()
+	fmt.Printf("All the blocks of miner at %s is:\n", address)
+	fmt.Println()
+
+	for {
+		b := bci.Next()
+		if b.Height == 1 {
+			return
+		}
+		if b.Address == address {
+			continue
+		}
+		fmt.Print("Timestamp:")
+		fmt.Println(time.Unix(b.Timestamp, 0).Format(time.RFC3339))
+		fmt.Printf("PrevHash: %x\n", b.PrevHash)
+		fmt.Printf("Data: %s\n", b.Data)
+		fmt.Printf("Hash: %x\n", b.Hash)
+		fmt.Printf("Height: %d\n", b.Height)
+		fmt.Printf("PoS: %t\n", bc.mp.Validate(b))
+		fmt.Println()
+
 	}
 }

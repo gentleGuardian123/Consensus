@@ -206,7 +206,8 @@ func (pow *ProofOfWork) Mine() (int64,[]byte, []byte) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	for nonce = 1; true; nonce ++ { // use cbc-mac to achieve pseudo random used for collision.
+	for nonce = 1; true; nonce ++ { 
+		// use cbc-mac to achieve pseudo random used for collision.
 		// use nonce as plaintext and compute CBC-MAC of it.
 		_nonce := make([]byte, 8)
 		binary.LittleEndian.PutUint64(_nonce, uint64(nonce))

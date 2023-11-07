@@ -14,6 +14,7 @@ import (
 )
 
 const blocksBucket = "blocks"
+const difficulty = 24
 
 type Block struct {
 	Timestamp int64
@@ -48,7 +49,7 @@ func NewBlock(data string, prevHash []byte, height int) *Block {
 		PrevHash: prevHash,
 		Hash: []byte{},
 		Height: height,	
-		DiffNum: 24,
+		DiffNum: difficulty,
 		Nonce: 0,
 	}
 	block.SetHash()

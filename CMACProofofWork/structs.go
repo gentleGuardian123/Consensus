@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"math/rand"
 	"reflect"
 	"time"
 
@@ -17,7 +18,7 @@ import (
 
 const blocksBucket = "blocks"
 const defaultDatabase = "blocks.db"
-const difficulty = 8
+const difficulty = 24
 
 type Block struct {
 	Timestamp 	int64
@@ -53,7 +54,7 @@ func NewBlock(data string, prevHash []byte, height int64) *Block {
 		Hash: 		[]byte{},
 		Height: 	height,	
 		DiffNum: 	difficulty,
-		Nonce: 		0,
+		Nonce: 		int64(0),
 		CMAC: 		[]byte{},
 	}
 	block.SetHash()
@@ -63,11 +64,11 @@ func NewBlock(data string, prevHash []byte, height int64) *Block {
 
 func NewGenesisBlock() *Block {
 	fmt.Println("No existing blockchain found. Creating a new blockchain...")
-	zeroHash := []byte("l")
+	randomHash := []byte("")
 	for i:= 1; i < 32; i++ {
-		zeroHash = append(zeroHash, 0)
+		randomHash = append(randomHash, byte(rand.Intn(256)))
 	}
-	return NewBlock("Genesis Block", zeroHash, 1)
+	return NewBlock("Genesis Block", randomHash, 1)
 }
 
 func NewBlockchain(dbFile string) *Blockchain {
@@ -120,7 +121,6 @@ func (bc *Blockchain) NewIterator() *BlockchainIterator {
 	bci := &BlockchainIterator{bc.tip, bc.db}
 	return bci
 }
-
 
 func (b *Block) SetHash() {
 	pow := NewProofOfWork(b)

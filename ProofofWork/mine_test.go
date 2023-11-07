@@ -1,4 +1,4 @@
-package CMACPoW
+package PoW
 
 import (
 	"fmt"

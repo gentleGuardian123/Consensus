@@ -16,7 +16,7 @@ func TestMineOnceTime(t *testing.T) {
 	end := time.Now()
 	elapsed := end.Sub(start)
 	// Genesis block + 9 blocks
-	fmt.Printf("The average time for mining a block with difficulty 16(-bit) is: %.2fs\n", elapsed.Seconds()/10)
+	fmt.Printf("The average time for mining a block with difficulty 24(-bit) is: %.2fs\n", elapsed.Seconds()/10)
 
 } 
 

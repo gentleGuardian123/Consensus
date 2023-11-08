@@ -65,7 +65,7 @@ func NewBlock(data string, prevHash []byte, height int64) *Block {
 func NewGenesisBlock() *Block {
 	fmt.Println("No existing blockchain found. Creating a new blockchain...")
 	randomHash := []byte("")
-	for i:= 1; i < 32; i++ {
+	for i:= 0; i < 32; i++ {
 		randomHash = append(randomHash, byte(rand.Intn(256)))
 	}
 	return NewBlock("Genesis Block", randomHash, 1)
@@ -198,7 +198,7 @@ func (i *BlockchainIterator) Next() *Block {
 }
 
 func (pow *ProofOfWork) Mine() (int64,[]byte, []byte) {
-	fmt.Printf("Mining the block containing \"%s\"\n\n", string(pow.block.Data))
+	fmt.Printf("Mining the block containing \"%s\"\n", string(pow.block.Data))
 
 	var nonce int64
 	var cmacInt big.Int
